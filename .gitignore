@@ -1,0 +1,41 @@
+# Thư mục build của CMake
+/build/
+/build-xq/
+/out/
+/bin/
+
+# File thực thi và file trung gian
+*.exe
+*.obj
+*.o
+*.a
+*.lib
+*.dll
+*.so
+*.dylib
+
+# CMake cache và các file tự động sinh
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+compile_commands.json
+
+# Cấu hình IDE / Editor
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+
+# Môi trường hệ điều hành
+.DS_Store
+Thumbs.db

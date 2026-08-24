@@ -1,0 +1,192 @@
+name: release
+
+# Push a date tag (vYYYYMMDD) to build askaig for every supported platform and publish a GitHub
+# release with the binaries. Restored from the proven workflow that shipped v20260615/16, changed
+# from push-on-main to TAG-triggered so a release is cut deliberately. Windows binaries are
+# cross-built from Linux with LLVM-MinGW (static); both macOS arches come from one macos runner via
+# CMAKE_OSX_ARCHITECTURES; Linux uses g++-14. The engine needs GCC/Clang intrinsics + C++26 (never MSVC).
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch: # manual run (builds + publishes a release dated today)
+
+permissions:
+  contents: write
+
+env:
+  # Pinned LLVM-MinGW toolchain (clang + lld + libc++) used to cross-build the Windows binaries.
+  LLVM_MINGW_TAG: "20250709"
+  LLVM_MINGW_UBUNTU: "22.04"
+
+jobs:
+  # Resolve the version ONCE so every binary and the release tag share it: the tag's date when
+  # tag-triggered (vYYYYMMDD -> YYYYMMDD), else today's date (manual run).
+  meta:
+    runs-on: ubuntu-24.04
+    outputs:
+      date: ${{ steps.d.outputs.date }}
+    steps:
+      - id: d
+        run: |
+          if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+            echo "date=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          else
+            echo "date=$(date -u +%Y%m%d)" >> "$GITHUB_OUTPUT"
+          fi
+
+  build:
+    needs: meta
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-x86_64
+            runner: ubuntu-24.04
+            arch: AVX2
+            pgo: gcc          # native x86_64 host -> can run the instrumented binary to profile
+          - name: macos-x86_64
+            runner: macos-15
+            arch: AVX2
+            osx_arch: x86_64  # NO pgo: macos-15 is arm64, can't reliably run an x86_64 binary to profile
+          - name: macos-arm64
+            runner: macos-15
+            arch: ARM_NEON
+            osx_arch: arm64
+            pgo: clang        # native arm64 host -> can run the instrumented binary to profile
+          - name: windows-x86_64
+            runner: ubuntu-24.04
+            arch: AVX2
+            mingw_triple: x86_64-w64-mingw32
+            mingw_proc: x86_64
+          - name: windows-arm64
+            runner: ubuntu-24.04
+            arch: ARM_NEON
+            mingw_triple: aarch64-w64-mingw32
+            mingw_proc: arm64
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: latest
+
+      - name: Install Linux deps (native + Windows-cross host)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++-14 ninja-build zip
+          if [ -n "${{ matrix.mingw_triple }}" ]; then
+            url="https://github.com/mstorsjo/llvm-mingw/releases/download/${LLVM_MINGW_TAG}/llvm-mingw-${LLVM_MINGW_TAG}-ucrt-ubuntu-${LLVM_MINGW_UBUNTU}-x86_64.tar.xz"
+            curl -fL "$url" -o llvm-mingw.tar.xz
+            mkdir -p "$HOME/llvm-mingw"
+            tar -xf llvm-mingw.tar.xz -C "$HOME/llvm-mingw" --strip-components=1
+            echo "$HOME/llvm-mingw/bin" >> "$GITHUB_PATH"
+          fi
+
+      - name: Install macOS deps
+        if: runner.os == 'macOS'
+        run: brew install ninja
+
+      - name: Configure & build (native, no PGO — Linux / macOS)
+        if: ${{ matrix.mingw_triple == '' && matrix.pgo == '' }}
+        run: |
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DSIMD=ON -DARCH=${{ matrix.arch }} \
+            -DASKAIG_VERSION=${{ needs.meta.outputs.date }} \
+            ${{ runner.os == 'Linux' && '-DCMAKE_CXX_COMPILER=g++-14' || '' }} \
+            ${{ matrix.osx_arch && format('-DCMAKE_OSX_ARCHITECTURES={0}', matrix.osx_arch) || '' }}
+          cmake --build build -j
+
+      # PGO (behaviour-neutral, ~3-8% nps): instrument -> run the same training workload as
+      # tools/build_pgo.sh (perft, NNUE eval, depth-16 search) -> rebuild optimised. Only on targets whose
+      # build host can RUN the binary to collect a profile. The node count is unchanged by PGO, so no
+      # SPRT is needed; a broken profile build just fails this job (and blocks the release — it never
+      # ships an un-profiled-but-mislabelled binary).
+      - name: Configure & build (Linux GCC PGO)
+        if: ${{ matrix.pgo == 'gcc' }}
+        run: |
+          set -e
+          common="-S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DSIMD=ON -DARCH=${{ matrix.arch }} -DASKAIG_VERSION=${{ needs.meta.outputs.date }} -DCMAKE_CXX_COMPILER=g++-14"
+          cmake $common -DPGO=generate
+          cmake --build build -j
+          # GCC writes .gcda into build/; the 'use' stage below must reuse this same dir.
+          printf 'position startpos\ngo perft 6\nquit\n' | ./build/askaig >/dev/null 2>&1 || true
+          printf 'position fen r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1\ngo perft 5\nquit\n' | ./build/askaig >/dev/null 2>&1 || true
+          printf 'position startpos\ngo perft 5 noncache\nquit\n' | ./build/askaig >/dev/null 2>&1 || true
+          printf 'bench evalnps\nquit\n' | ./build/askaig >/dev/null 2>&1 || true
+          printf 'bench 16\nquit\n' | ./build/askaig >/dev/null 2>&1 || true
+          cmake $common -DPGO=use
+          cmake --build build -j
+
+      - name: Configure & build (macOS Clang PGO)
+        if: ${{ matrix.pgo == 'clang' }}
+        run: |
+          set -e
+          common="-S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DSIMD=ON -DARCH=${{ matrix.arch }} -DASKAIG_VERSION=${{ needs.meta.outputs.date }} -DCMAKE_OSX_ARCHITECTURES=${{ matrix.osx_arch }}"
+          cmake $common -DPGO=generate
+          cmake --build build -j
+          rm -f build/pgo-*.profraw
+          printf 'position startpos\ngo perft 6\nquit\n' | LLVM_PROFILE_FILE="build/pgo-%p.profraw" ./build/askaig >/dev/null 2>&1 || true
+          printf 'position fen r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1\ngo perft 5\nquit\n' | LLVM_PROFILE_FILE="build/pgo-%p.profraw" ./build/askaig >/dev/null 2>&1 || true
+          printf 'position startpos\ngo perft 5 noncache\nquit\n' | LLVM_PROFILE_FILE="build/pgo-%p.profraw" ./build/askaig >/dev/null 2>&1 || true
+          printf 'bench evalnps\nquit\n' | LLVM_PROFILE_FILE="build/pgo-%p.profraw" ./build/askaig >/dev/null 2>&1 || true
+          printf 'bench 16\nquit\n' | LLVM_PROFILE_FILE="build/pgo-%p.profraw" ./build/askaig >/dev/null 2>&1 || true
+          xcrun llvm-profdata merge -output=build/pgo.profdata build/pgo-*.profraw
+          cmake $common -DPGO=use -DPGO_PROFILE="$PWD/build/pgo.profdata"
+          cmake --build build -j
+
+      - name: Configure & build (Windows cross — LLVM-MinGW)
+        if: ${{ matrix.mingw_triple != '' }}
+        run: |
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DSIMD=ON -DARCH=${{ matrix.arch }} \
+            -DASKAIG_VERSION=${{ needs.meta.outputs.date }} \
+            -DCMAKE_SYSTEM_NAME=Windows \
+            -DCMAKE_SYSTEM_PROCESSOR=${{ matrix.mingw_proc }} \
+            -DCMAKE_C_COMPILER=${{ matrix.mingw_triple }}-clang \
+            -DCMAKE_CXX_COMPILER=${{ matrix.mingw_triple }}-clang++ \
+            -DCMAKE_EXE_LINKER_FLAGS=-static
+          cmake --build build -j
+
+      - name: Package
+        id: pkg
+        run: |
+          base="askaig-${{ needs.meta.outputs.date }}-${{ matrix.name }}"
+          binname="askaig-${{ needs.meta.outputs.date }}"
+          if [ -f build/askaig.exe ]; then
+            mv "build/askaig.exe" "build/$binname.exe"
+            archive="$base.zip"
+            (cd build && zip -q "../$archive" "$binname.exe")
+          else
+            mv "build/askaig" "build/$binname"
+            archive="$base.tar.gz"
+            tar -czf "$archive" -C build "$binname"
+          fi
+          echo "archive=$archive" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v6
+        with:
+          name: ${{ steps.pkg.outputs.archive }}
+          path: ${{ steps.pkg.outputs.archive }}
+          if-no-files-found: error
+
+  release:
+    needs: [meta, build]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          path: dist
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v3
+        with:
+          tag_name: v${{ needs.meta.outputs.date }}
+          name: Askaig ${{ needs.meta.outputs.date }}
+          files: dist/*
+          fail_on_unmatched_files: true
