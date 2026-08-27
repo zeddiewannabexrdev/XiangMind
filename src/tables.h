@@ -1,14 +1,14 @@
 #pragma once
 #include "types.h"
 
-struct alignas(32) HorseEntry {
+struct HorseEntry {
     Bitboard targets;
-    Square legs[8]; 
+    Square legs[8];
 };
 
-struct alignas(32) ElephantEntry {
+struct ElephantEntry {
     Bitboard targets;
-    Square eyes[4]; 
+    Square eyes[4];
 };
 
 extern Bitboard GENERAL_ATTACKS[NSQUARES];
@@ -17,12 +17,12 @@ extern HorseEntry HORSE_TABLE[NSQUARES];
 extern ElephantEntry ELEPHANT_TABLE[NSQUARES];
 extern Bitboard SOLDIER_ATTACKS[NCOLORS][NSQUARES];
 
-extern Bitboard RANK_CHARIOT_ATK[10][512];
-extern Bitboard FILE_CHARIOT_ATK[9][1024];
-extern Bitboard RANK_CANNON_QUIET[10][512];
-extern Bitboard FILE_CANNON_QUIET[9][1024];
-extern Bitboard RANK_CANNON_CAPT[10][512];
-extern Bitboard FILE_CANNON_CAPT[9][1024];
+extern Bitboard RANK_CHARIOT_ATK[NSQUARES][512];
+extern Bitboard FILE_CHARIOT_ATK[NSQUARES][1024];
+extern Bitboard RANK_CANNON_QUIET[NSQUARES][512];
+extern Bitboard FILE_CANNON_QUIET[NSQUARES][1024];
+extern Bitboard RANK_CANNON_CAPT[NSQUARES][512];
+extern Bitboard FILE_CANNON_CAPT[NSQUARES][1024];
 
 extern Bitboard SQUARES_BETWEEN_BB[NSQUARES][NSQUARES];
 extern Bitboard LINE[NSQUARES][NSQUARES];
@@ -43,7 +43,7 @@ inline int extract_rank(Bitboard occ, int r) {
 inline int extract_file(Bitboard occ, int f) {
     int res = 0;
     for (int r = 0; r < 10; ++r) {
-        if (sq_bb(r * 9 + f) & occ) res |= (1 << r);
+        if (sq_bb((Square)(r * 9 + f)) & occ) res |= (1 << r);
     }
     return res;
 }
@@ -53,7 +53,7 @@ inline Bitboard get_chariot_attacks(Square sq, Bitboard occ) {
     int f = file_of(sq);
     int rank_mask = extract_rank(occ, r);
     int file_mask = extract_file(occ, f);
-    return RANK_CHARIOT_ATK[r][rank_mask] | FILE_CHARIOT_ATK[f][file_mask];
+    return RANK_CHARIOT_ATK[sq][rank_mask] | FILE_CHARIOT_ATK[sq][file_mask];
 }
 
 inline Bitboard get_cannon_quiet_attacks(Square sq, Bitboard occ) {
@@ -61,7 +61,7 @@ inline Bitboard get_cannon_quiet_attacks(Square sq, Bitboard occ) {
     int f = file_of(sq);
     int rank_mask = extract_rank(occ, r);
     int file_mask = extract_file(occ, f);
-    return RANK_CANNON_QUIET[r][rank_mask] | FILE_CANNON_QUIET[f][file_mask];
+    return RANK_CANNON_QUIET[sq][rank_mask] | FILE_CANNON_QUIET[sq][file_mask];
 }
 
 inline Bitboard get_cannon_capture_attacks(Square sq, Bitboard occ) {
@@ -69,7 +69,7 @@ inline Bitboard get_cannon_capture_attacks(Square sq, Bitboard occ) {
     int f = file_of(sq);
     int rank_mask = extract_rank(occ, r);
     int file_mask = extract_file(occ, f);
-    return RANK_CANNON_CAPT[r][rank_mask] | FILE_CANNON_CAPT[f][file_mask];
+    return RANK_CANNON_CAPT[sq][rank_mask] | FILE_CANNON_CAPT[sq][file_mask];
 }
 
 inline bool flying_general(Square red_king, Square black_king, Bitboard occ) {
