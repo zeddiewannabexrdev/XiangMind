@@ -24,11 +24,19 @@ int main(int argc, char **argv) {
   Position shared_pos;
   std::mutex pos_mutex;
 
-  bool bench = argc > 1 && std::strcmp(argv[1], "--debug") == 0;
-  std::thread uci_thread(uci::loop, bench, std::ref(shared_pos), std::ref(pos_mutex));
+  bool bench = false;
+  bool use_gui = true;
+  for (int i = 1; i < argc; ++i) {
+      if (std::strcmp(argv[i], "--debug") == 0) bench = true;
+      if (std::strcmp(argv[i], "--uci") == 0) use_gui = false;
+  }
 
-  GuiViewer::run(shared_pos, pos_mutex);
-
-  uci_thread.join();
+  if (use_gui) {
+      std::thread uci_thread(uci::loop, bench, std::ref(shared_pos), std::ref(pos_mutex));
+      GuiViewer::run(shared_pos, pos_mutex);
+      uci_thread.join();
+  } else {
+      uci::loop(bench, shared_pos, pos_mutex);
+  }
   return 0;
 }

@@ -17,12 +17,22 @@ void loop(bool bench, Position& pos, std::mutex& pos_mutex) {
     
     while (std::getline(std::cin, line)) {
         if (line == "uci" || line == "ucci") {
-            std::cout << "id name xiangqi-zeddieengine\n";
-            std::cout << "id author askaig\n";
-            if (line == "uci") std::cout << "uciok\n";
-            if (line == "ucci") std::cout << "ucciok\n";
+            std::cout << "id name xiangqi-zeddieengine" << std::endl;
+            std::cout << "id author askaig" << std::endl;
+            std::cout << "option name Hash type spin default 16 min 1 max 1024" << std::endl;
+            std::cout << "option name Threads type spin default 1 min 1 max 128" << std::endl;
+            std::cout << "option name UCI_Variant type string default xiangqi" << std::endl;
+            std::cout << "option name Move Overhead type spin default 10 min 0 max 5000" << std::endl;
+            std::cout << "option name SyzygyPath type string default <empty>" << std::endl;
+            std::cout << "option name Ponder type check default false" << std::endl;
+            std::cout << "option name UCI_ShowWDL type check default false" << std::endl;
+            std::cout << "option name MultiPV type spin default 1 min 1 max 500" << std::endl;
+            std::cout << "option name UCI_Chess960 type check default false" << std::endl;
+            std::cout << "option name UCI_AnalyseMode type check default false" << std::endl;
+            if (line == "uci") std::cout << "uciok" << std::endl;
+            if (line == "ucci") std::cout << "ucciok" << std::endl;
         } else if (line == "isready") {
-            std::cout << "readyok\n";
+            std::cout << "readyok" << std::endl;
         } else if (line == "ucinewgame") {
             std::lock_guard<std::mutex> lock(pos_mutex);
             Position::set(DEFAULT_FEN, pos);
@@ -62,7 +72,7 @@ void loop(bool bench, Position& pos, std::mutex& pos_mutex) {
                 copy_pos = pos;
             }
             search::Result r = search::think(copy_pos, 1, nullptr, 1000, 0);
-            std::cout << "bestmove " << r.best << "\n";
+            std::cout << "bestmove " << r.best << std::endl;
         } else if (line == "quit") {
             std::exit(0);
         } else if (line == "d") {

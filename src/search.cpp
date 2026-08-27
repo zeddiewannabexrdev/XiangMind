@@ -1,5 +1,6 @@
 #include "search.h"
 #include "eval.h"
+#include "nnue.h"
 #include "position.h"
 
 namespace search {
@@ -12,7 +13,7 @@ const int MATE_SCORE = 29000;
 
 int negamax(Position& pos, int depth, int alpha, int beta) {
     if (depth <= 0) {
-        return eval::evaluate(pos);
+        return eval::evaluate(pos) + nnue::evaluate(pos);
     }
     
     Move list[256];
@@ -49,10 +50,9 @@ Result think(Position& pos, int threads, const InfoFn& info, int64_t tm, int64_t
     
     Move best_move = list[0];
     int best_score = -INF;
-    int depth = 5; // Basic fixed depth search for Phase 1-4 prototype
+    int depth = 3; // Nâng lên depth 3 để AI đánh thông minh hơn một chút, mất thời gian suy nghĩ hơn
     
     for (Move* m = list; m != end; ++m) {
-        if (pos.stm() == WHITE) pos.play<WHITE>(*m); else pos.play<BLACK>(*m);
         
         int score = -negamax(pos, depth - 1, -INF, INF);
         

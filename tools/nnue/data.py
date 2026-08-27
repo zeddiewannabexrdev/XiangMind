@@ -33,10 +33,10 @@ BF_DTYPE = np.dtype([
 ])
 assert BF_DTYPE.itemsize == 72
 
-def open_bf(path):
+def open_bf(path: str) -> np.memmap:
     return np.memmap(path, dtype=BF_DTYPE, mode="r")
 
-def king_ctx(oriented_ksq):
+def king_ctx(oriented_ksq: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     mir = ((oriented_ksq % 9) >= 5).astype(np.int64)
     # If mirrored, mirror the square across the center file (file 4).
     # file = sq % 9
@@ -51,7 +51,7 @@ def king_ctx(oriented_ksq):
     bucket = KING_BUCKET[actual_sq]
     return bucket, mir
 
-def decode_batch(recs):
+def decode_batch(recs: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     B = len(recs)
     sqs = recs["sqs"]
     pcs = recs["pcs"]

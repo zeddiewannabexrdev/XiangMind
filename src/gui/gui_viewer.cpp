@@ -17,7 +17,7 @@ void GuiViewer::run(Position& shared_pos, std::mutex& pos_mutex) {
     const int screen_width = margin_x * 2 + 8 * square_size + panel_width;
     const int screen_height = margin_y * 2 + 9 * square_size;
 
-    InitWindow(screen_width, screen_height, "Xiangqi Zeddie Engine - Board Viewer");
+    SetTraceLogLevel(7); InitWindow(screen_width, screen_height, "Xiangqi Zeddie Engine - Board Viewer");
     SetTargetFPS(60);
 
     const char* piece_names[15] = {

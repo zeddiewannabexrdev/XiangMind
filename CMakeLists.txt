@@ -23,6 +23,7 @@ add_executable(${PROJECT_NAME}
     src/tables.cpp
     src/position.cpp
     src/eval.cpp
+    src/nnue.cpp
     src/see.cpp
     src/tt.cpp
     src/smp.cpp

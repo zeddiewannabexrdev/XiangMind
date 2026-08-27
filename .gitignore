@@ -7,7 +7,6 @@ cmake-build-*/
 _deps/
 
 # Compiled object files and binaries
-*.exe
 *.obj
 *.o
 *.a
@@ -15,6 +14,8 @@ _deps/
 *.dll
 *.so
 *.dylib
+*.exe
+!xiangqi-zeddieengine.exe
 
 # CMake cache and intermediate files
 CMakeCache.txt
@@ -27,28 +28,18 @@ compile_commands.json
 # IDE / Editor configurations
 .vscode/
 !.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
 .idea/
 *.suo
-*.ntvs*
-*.njsproj
 *.sln
-*.vcxproj
-*.vcxproj.filters
-*.vcxproj.user
 .clangd/
 
 # OS generated files
 .DS_Store
 Thumbs.db
 
-# Machine Learning & Datagen files
+# Machine Learning / Datagen files
 *.bin
 *.dat
+*.bf
 *.pt
-*.nnue
 __pycache__/
-
-# Scratch and Cache
-.cache/
