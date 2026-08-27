@@ -34,18 +34,21 @@ namespace {
   constexpr int MAX_PLIES       = 400;
 
   struct Record {
-    uint64_t occ; // Warning: 64 bits only! Not enough for 90 squares. Kept for struct size compat.
-    uint8_t  pcs[16];
+    uint8_t  sqs[32]; // Position of up to 32 pieces, 255 = none
+    uint8_t  pcs[32]; // Type and color of the pieces
     int16_t  score; 
     uint8_t  result; 
     uint8_t  ksq; 
     uint8_t  opp_ksq; 
     uint8_t  pad[3];
   };
-  static_assert(sizeof(Record) == 32);
+  static_assert(sizeof(Record) == 72);
 
   Record encode(const Position &pos, int score) {
-    Record     r{};
+    Record r{};
+    std::memset(&r, 0, sizeof(r));
+    for (int i = 0; i < 32; ++i) r.sqs[i] = 255; // 255 marks empty
+
     const bool black = pos.stm() == BLACK;
     r.score          = int16_t(score);
 
@@ -56,13 +59,15 @@ namespace {
       const Piece  pc   = pos.piece_on(orig);
       if (pc == NO_PIECE)
         continue;
+      
       const int type = type_of(pc);
       const int col  = (color_of(pc) == pos.stm()) ? 0 : 1; 
-      if (sq < 64) r.occ |= 1ull << sq; // Prevent overflow for sq >= 64
-      if (idx < 32) r.pcs[idx / 2] |= uint8_t(((col << 3) | type) << (4 * (idx % 2)));
+
+      r.sqs[idx] = sq;
+      r.pcs[idx] = uint8_t((col << 3) | type);
+
       if (type == GENERAL) {
-        if (col == 0)
-          r.ksq = uint8_t(sq);
+        if (col == 0) r.ksq = uint8_t(sq);
         else {
           Square opp_s = black ? create_square(file_of(s), Rank(9 - rank_of(s))) : s;
           r.opp_ksq = uint8_t(opp_s);

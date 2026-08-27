@@ -1,10 +1,12 @@
-# Thư mục build của CMake
+# Build and Output directories
 /build/
 /build-xq/
 /out/
 /bin/
+cmake-build-*/
+_deps/
 
-# File thực thi và file trung gian
+# Compiled object files and binaries
 *.exe
 *.obj
 *.o
@@ -14,7 +16,7 @@
 *.so
 *.dylib
 
-# CMake cache và các file tự động sinh
+# CMake cache and intermediate files
 CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
@@ -22,7 +24,7 @@ Makefile
 *.cmake
 compile_commands.json
 
-# Cấu hình IDE / Editor
+# IDE / Editor configurations
 .vscode/
 !.vscode/settings.json
 !.vscode/tasks.json
@@ -35,18 +37,18 @@ compile_commands.json
 *.vcxproj
 *.vcxproj.filters
 *.vcxproj.user
+.clangd/
 
-# Môi trường hệ điều hành
+# OS generated files
 .DS_Store
 Thumbs.db
 
-# D? li?u hu?n luy?n NNUE (Datagen)
+# Machine Learning & Datagen files
 *.bin
 *.dat
+*.pt
+*.nnue
+__pycache__/
 
-# C�c thu m?c c?u h�nh v� cache kh�c
-cmake-build-*/
-.clangd/
+# Scratch and Cache
 .cache/
-_deps/
-

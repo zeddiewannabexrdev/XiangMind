@@ -17,7 +17,7 @@ import tempfile
 
 import numpy as np
 
-REC = 32
+REC = 72
 
 
 def main():
