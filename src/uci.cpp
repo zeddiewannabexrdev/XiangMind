@@ -8,12 +8,12 @@
 
 namespace uci {
 
-void loop(bool bench) {
+void loop(bool bench, Position& pos, std::mutex& pos_mutex) {
     std::string line;
-    Position pos;
-    zobrist::initialise_zobrist_keys();
-    initialise_all_databases();
-    Position::set(DEFAULT_FEN, pos);
+    {
+        std::lock_guard<std::mutex> lock(pos_mutex);
+        Position::set(DEFAULT_FEN, pos);
+    }
     
     while (std::getline(std::cin, line)) {
         if (line == "uci" || line == "ucci") {
@@ -24,13 +24,15 @@ void loop(bool bench) {
         } else if (line == "isready") {
             std::cout << "readyok\n";
         } else if (line == "ucinewgame") {
+            std::lock_guard<std::mutex> lock(pos_mutex);
             Position::set(DEFAULT_FEN, pos);
         } else if (line.find("position fen ") == 0) {
             std::string fen = line.substr(13);
+            std::lock_guard<std::mutex> lock(pos_mutex);
             Position::set(fen, pos);
         } else if (line.find("position startpos") == 0) {
+            std::lock_guard<std::mutex> lock(pos_mutex);
             Position::set(DEFAULT_FEN, pos);
-            // Handle " moves " if present
             size_t moves_pos = line.find(" moves ");
             if (moves_pos != std::string::npos) {
                 std::istringstream iss(line.substr(moves_pos + 7));
@@ -38,7 +40,7 @@ void loop(bool bench) {
                 while (iss >> move_str) {
                     Move list[256];
                     Move* end = pos.stm() == WHITE ? pos.generate_legals<WHITE, false>(list) : pos.generate_legals<BLACK, false>(list);
-                    Move m(move_str); // Parse string to Move (from-to)
+                    Move m(move_str);
                     bool legal = false;
                     for (Move* cur = list; cur != end; ++cur) {
                         if (cur->from() == m.from() && cur->to() == m.to()) {
@@ -54,11 +56,17 @@ void loop(bool bench) {
                 }
             }
         } else if (line.find("go") == 0) {
-            search::Result r = search::think(pos, 1, nullptr, 1000, 0);
+            Position copy_pos;
+            {
+                std::lock_guard<std::mutex> lock(pos_mutex);
+                copy_pos = pos;
+            }
+            search::Result r = search::think(copy_pos, 1, nullptr, 1000, 0);
             std::cout << "bestmove " << r.best << "\n";
         } else if (line == "quit") {
-            break;
+            std::exit(0);
         } else if (line == "d") {
+            std::lock_guard<std::mutex> lock(pos_mutex);
             for (int r = RANK9; r >= RANK0; --r) {
                 for (int f = AFILE; f <= IFILE; ++f) {
                     Piece pc = pos.piece_on(create_square((File)f, (Rank)r));
@@ -71,5 +79,4 @@ void loop(bool bench) {
         }
     }
 }
-
 } // namespace uci

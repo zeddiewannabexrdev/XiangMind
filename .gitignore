@@ -39,3 +39,14 @@ compile_commands.json
 # M√¥i tr∆∞·ªùng h·ªá ƒëi·ªÅu h√†nh
 .DS_Store
 Thumbs.db
+
+# D? li?u hu?n luy?n NNUE (Datagen)
+*.bin
+*.dat
+
+# C·c thu m?c c?u hÏnh v‡ cache kh·c
+cmake-build-*/
+.clangd/
+.cache/
+_deps/
+

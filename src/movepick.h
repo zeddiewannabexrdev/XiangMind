@@ -30,8 +30,8 @@ namespace search {
       const bool in_check  = pos.turn() == WHITE ? pos.in_check<WHITE>() : pos.in_check<BLACK>();
       const bool caps_only = quiescence && !in_check; // in check QS searches every evasion
       Move      *end = pos.turn() == WHITE
-                               ? (caps_only ? pos.generate_legals<WHITE, true>(moves) : pos.generate_legals<WHITE>(moves))
-                               : (caps_only ? pos.generate_legals<BLACK, true>(moves) : pos.generate_legals<BLACK>(moves));
+                               ? (caps_only ? pos.generate_legals<WHITE, true>(moves) : pos.generate_legals<WHITE, false>(moves))
+                               : (caps_only ? pos.generate_legals<BLACK, true>(moves) : pos.generate_legals<BLACK, false>(moves));
       n = size_t(end - moves);
 
       for (size_t i = 0; i < n; ++i) {
