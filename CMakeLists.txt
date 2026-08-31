@@ -32,6 +32,7 @@ add_executable(${PROJECT_NAME}
     src/main.cpp
     src/datagen.cpp
     src/gui/gui_viewer.cpp)
+set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "askaig")
 
 target_include_directories(${PROJECT_NAME} PRIVATE src src/gui)
 target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
