@@ -16,6 +16,9 @@ _deps/
 *.dylib
 *.exe
 !xiangqi-zeddieengine.exe
+*.zip
+*.7z
+*.tar.gz
 
 # Third-party downloaded engines
 fairy-stockfish*
