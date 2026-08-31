@@ -24,6 +24,10 @@ fairy-stockfish*
 config.json
 .env
 
+# Local documentation files
+*.docx
+tools/make_doc.py
+
 # Python caches
 __pycache__/
 */__pycache__/
