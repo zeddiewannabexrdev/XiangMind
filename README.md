@@ -38,11 +38,11 @@ Once successfully built, the executable will be generated at `build-xq/xiangqi-z
 ### Method 1: AI Tournament Mode (Zeddie vs Fairy-Stockfish)
 Run the included tournament referee to pit **Xiangqi Zeddie Engine** against **Fairy-Stockfish** (or another engine) with live Elo ratings and alternating sides:
 ```powershell
-# Fast automated tournament (e.g. 20 rounds)
-python -u tournament.py --rounds 20 --depth 4 --delay 0.0
+# Watch live on Raylib GUI window (default)
+python -u tournament.py
 
-# Watch live in Raylib GUI window
-python -u tournament.py --rounds 5 --depth 4 --delay 1.0 --gui
+# Fast automated tournament without GUI (e.g. 20 rounds)
+python -u tournament.py --rounds 20 --depth 4 --delay 0.0 --nogui
 ```
 
 ### Method 2: Online Bot on PyChess.org
