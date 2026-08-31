@@ -17,6 +17,18 @@ _deps/
 *.exe
 !xiangqi-zeddieengine.exe
 
+# Third-party downloaded engines
+fairy-stockfish*
+
+# Config & Secrets (Private API tokens)
+config.json
+.env
+
+# Python caches
+__pycache__/
+*/__pycache__/
+*.pyc
+
 # CMake cache and intermediate files
 CMakeCache.txt
 CMakeFiles/
@@ -42,4 +54,3 @@ Thumbs.db
 *.dat
 *.bf
 *.pt
-__pycache__/

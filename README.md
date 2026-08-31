@@ -33,30 +33,49 @@ Once successfully built, the executable will be generated at `build-xq/xiangqi-z
 
 ---
 
-## 🚀 How to Play (3 Methods)
+## 🚀 How to Play (4 Methods)
 
-### Method 1: AI Tournament Mode (Demo)
-This is the best way to see the AI in action. Run the included Python script to launch two AI instances that will automatically play against each other on the graphical board.
+### Method 1: AI Tournament Mode (Zeddie vs Fairy-Stockfish)
+Run the included tournament referee to pit **Xiangqi Zeddie Engine** against **Fairy-Stockfish** (or another engine) with live Elo ratings and alternating sides:
 ```powershell
-python -u tournament.py
+# Fast automated tournament (e.g. 20 rounds)
+python -u tournament.py --rounds 20 --depth 4 --delay 0.0
+
+# Watch live in Raylib GUI window
+python -u tournament.py --rounds 5 --depth 4 --delay 1.0 --gui
 ```
 
-### Method 2: Play via Professional GUI (Recommended)
+### Method 2: Online Bot on PyChess.org
+Run your engine as an official online bot on [PyChess.org](https://www.pychess.org):
+1. Copy `config.example.json` to `config.json` and paste your PyChess Bot API Token:
+```json
+{
+  "token": "YOUR_PYCHESS_BOT_TOKEN_HERE"
+}
+```
+2. Start the bot runner:
+```powershell
+python -u pychess_bot.py
+```
+The bot will stay online, automatically accept incoming Xiangqi challenges, and play games with dynamic time management!
+
+### Method 3: Play via Professional GUI (Recommended)
 To play against the engine manually using your mouse:
 1. Download a Xiangqi GUI like **Pengfei Chess** or **Binghe2000**.
 2. Add a new Engine in the software and point it to the `xiangqi-zeddieengine.exe` file.
 3. Start a new game and enjoy playing against your NNUE-powered AI!
 
-### Method 3: Console Direct Interaction (For Developers)
+### Method 4: Console Direct Interaction (For Developers)
 For debugging and manual command input:
 ```powershell
-.\xiangqi-zeddieengine.exe
+.\xiangqi-zeddieengine.exe --uci
 ```
 **Basic Commands:**
-- `ucci`: Initialize the engine.
+- `uci`: Initialize the engine.
 - `position startpos`: Set up the initial board state.
-- `position startpos moves h2e2`: Move a piece (e.g., Cannon from h2 to e2).
-- `go depth 3`: Command the AI to search 3 plies deep and return the `bestmove`.
+- `position startpos moves h2e2`: Move a piece (accepts both 0-indexed `h2e2` and 1-indexed `h3e3`).
+- `go depth 5`: Command the AI to search 5 plies deep.
+- `go wtime 60000 btime 60000`: Search with time control.
 - `quit`: Exit.
 
 ---

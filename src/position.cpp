@@ -28,7 +28,14 @@ void Position::move_piece(Square from, Square to) {
     Bitboard mask = sq_bb(from) | sq_bb(to); piece_bb[pc] ^= mask;
 }
 
-bool Position::is_draw() const { return history[game_ply].fifty >= 120; }
+bool Position::is_draw() const {
+    if (history[game_ply].fifty >= 120) return true;
+    int limit = std::max(0, game_ply - history[game_ply].fifty);
+    for (int i = game_ply - 2; i >= limit; i -= 2) {
+        if (history[i].hash == hash) return true;
+    }
+    return false;
+}
 
 Bitboard Position::attackers_to(Square sq, Bitboard occ) const {
     Bitboard attackers = Bitboard{0, 0};
