@@ -10,14 +10,14 @@
 #include <vector>
 
 void GuiViewer::run(Position& shared_pos, std::mutex& pos_mutex) {
-    const int square_size = 80; // Tang kích thu?c ô c? t? 60 lên 80
+    const int square_size = 80; // Tang kÃ­ch thu?c Ã´ c? t? 60 lÃªn 80
     const int margin_x = 70;    // Tang margin d? nhu?ng ch? cho ch? s?
     const int margin_y = 70;
     const int panel_width = 450; // Tang chi?u r?ng panel tuong ?ng
     const int screen_width = margin_x * 2 + 8 * square_size + panel_width;
     const int screen_height = margin_y * 2 + 9 * square_size;
 
-    SetTraceLogLevel(7); InitWindow(screen_width, screen_height, "Xiangqi Zeddie Engine - Board Viewer");
+    SetTraceLogLevel(7); InitWindow(screen_width, screen_height, "XiangMind - Board Viewer");
     SetTargetFPS(60);
 
     const char* piece_names[15] = {
@@ -48,7 +48,7 @@ void GuiViewer::run(Position& shared_pos, std::mutex& pos_mutex) {
             int y = margin_y + (9 - r) * square_size;
             DrawLine(margin_x, y, margin_x + 8 * square_size, y, rl_black);
             
-            // Row labels (0-9) d?y xa ra kh?i quân c?
+            // Row labels (0-9) d?y xa ra kh?i quÃ¢n c?
             const char* num_str = TextFormat("%d", r);
             DrawText(num_str, margin_x - 45, y - 10, 24, rl_blue);
         }
@@ -82,7 +82,7 @@ void GuiViewer::run(Position& shared_pos, std::mutex& pos_mutex) {
                     
                     rlColor piece_color = color_of(pc) == WHITE ? rl_red : rl_black;
                     
-                    // Quân c? cung to hon
+                    // QuÃ¢n c? cung to hon
                     DrawCircle(x, y, 32, rl_raywhite);
                     DrawCircleLines(x, y, 32, piece_color);
                     DrawCircleLines(x, y, 30, piece_color);
@@ -99,10 +99,10 @@ void GuiViewer::run(Position& shared_pos, std::mutex& pos_mutex) {
         DrawRectangle(panel_start_x, 0, panel_width, screen_height, rl_lightgray);
         DrawLine(panel_start_x, 0, panel_start_x, screen_height, rl_darkgray);
         
-        int text_x = panel_start_x + 20; // Th?t l? thêm chút
-        int text_y = 30; // Kéo text xu?ng chút
+        int text_x = panel_start_x + 20; // Th?t l? thÃªm chÃºt
+        int text_y = 30; // KÃ©o text xu?ng chÃºt
         
-        DrawText("XQ ZEDDIE - CHEAT SHEET", text_x, text_y, 24, rl_black);
+        DrawText("XIANGMIND - CHEAT SHEET", text_x, text_y, 24, rl_black);
         text_y += 50;
         
         DrawText("[How to Play]", text_x, text_y, 20, rl_red);
@@ -146,7 +146,7 @@ void GuiViewer::run(Position& shared_pos, std::mutex& pos_mutex) {
         text_y += 30;
         DrawText("Run the executable with args:", text_x, text_y, 18, rl_darkgray);
         text_y += 25;
-        DrawText("xiangqi-zeddieengine.exe --datagen", text_x, text_y, 18, rl_black);
+        DrawText("XiangMind.exe --datagen", text_x, text_y, 18, rl_black);
 
         EndDrawing();
     }

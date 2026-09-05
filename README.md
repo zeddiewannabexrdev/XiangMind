@@ -1,6 +1,6 @@
-# Xiangqi Zeddie Engine
+# XiangMind Engine
 
-**Xiangqi Zeddie Engine** is an ultra-fast Xiangqi (Chinese Chess) engine written in modern C++26. It utilizes a custom 128-bit Bitboard representation and modern SIMD instructions to achieve extreme move generation speeds. 
+**XiangMind** is an ultra-fast Xiangqi (Chinese Chess) engine written in modern C++26. It utilizes a custom 128-bit Bitboard representation and modern SIMD instructions to achieve extreme move generation speeds. 
 
 The engine features a **built-in Raylib Graphical Viewer** for interactive play and a complete **PyTorch NNUE Toolchain** for training modern neural network evaluations from scratch.
 
@@ -29,14 +29,14 @@ cmake -S . -B build-xq -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
 # Build the engine (using 4 CPU threads)
 cmake --build build-xq -j 4
 ```
-Once successfully built, the executable will be generated at `build-xq/xiangqi-zeddieengine.exe`.
+Once successfully built, the executable will be generated at `build-xq/XiangMind.exe`.
 
 ---
 
 ## 🚀 How to Play (4 Methods)
 
-### Method 1: AI Tournament Mode (Zeddie vs Fairy-Stockfish)
-Run the included tournament referee to pit **Xiangqi Zeddie Engine** against **Fairy-Stockfish** (or another engine) with live Elo ratings and alternating sides:
+### Method 1: AI Tournament Mode (XiangMind vs Fairy-Stockfish)
+Run the included tournament referee to pit **XiangMind** against **Fairy-Stockfish** (or another engine) with live Elo ratings and alternating sides:
 ```powershell
 # Watch live on Raylib GUI window (default)
 python -u tournament.py
@@ -62,13 +62,13 @@ The bot will stay online, automatically accept incoming Xiangqi challenges, and 
 ### Method 3: Play via Professional GUI (Recommended)
 To play against the engine manually using your mouse:
 1. Download a Xiangqi GUI like **Pengfei Chess** or **Binghe2000**.
-2. Add a new Engine in the software and point it to the `xiangqi-zeddieengine.exe` file.
+2. Add a new Engine in the software and point it to the `XiangMind.exe` file.
 3. Start a new game and enjoy playing against your NNUE-powered AI!
 
 ### Method 4: Console Direct Interaction (For Developers)
 For debugging and manual command input:
 ```powershell
-.\xiangqi-zeddieengine.exe --uci
+.\XiangMind.exe --uci
 ```
 **Basic Commands:**
 - `uci`: Initialize the engine.
@@ -87,7 +87,7 @@ If you want to train a smarter AI, follow this pipeline:
 **1. Generate Self-Play Data (Datagen):**
 Command the engine to play thousands of games against itself to collect evaluation data (Records).
 ```powershell
-.\xiangqi-zeddieengine.exe --datagen 100000 data_train.bf
+.\XiangMind.exe --datagen 100000 data_train.bf
 ```
 
 **2. Train with PyTorch:**

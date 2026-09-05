@@ -66,7 +66,7 @@ void loop(bool bench, Position& pos, std::mutex& pos_mutex) {
         if (line.empty()) continue;
 
         if (line == "uci" || line == "ucci") {
-            std::cout << "id name xiangqi-zeddieengine" << std::endl;
+            std::cout << "id name XiangMind" << std::endl;
             std::cout << "id author askaig" << std::endl;
             std::cout << "option name Hash type spin default 16 min 1 max 1024" << std::endl;
             std::cout << "option name Threads type spin default 1 min 1 max 128" << std::endl;

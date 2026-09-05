@@ -9,7 +9,11 @@ import requests
 
 PYCHESS_BASE = "https://www.pychess.org"
 
-ENGINE_PATH = os.path.join(os.path.dirname(__file__), "xiangqi-zeddieengine.exe")
+ENGINE_PATH = os.path.join(os.path.dirname(__file__), "XiangMind.exe")
+if not os.path.exists(ENGINE_PATH):
+    ENGINE_PATH = os.path.join(os.path.dirname(__file__), "build-xq", "XiangMind.exe")
+if not os.path.exists(ENGINE_PATH):
+    ENGINE_PATH = os.path.join(os.path.dirname(__file__), "xiangqi-zeddieengine.exe")
 if not os.path.exists(ENGINE_PATH):
     ENGINE_PATH = os.path.join(os.path.dirname(__file__), "build-xq", "xiangqi-zeddieengine.exe")
 
@@ -251,7 +255,7 @@ def start_bot(token, target_challenge=None):
     print(f"   Che do: Tu dong nhan thach dau Co Tuong (Xiangqi)")
     print(f"==================================================\n")
 
-    print("[KHOI TAO] Dang khoi dong Zeddie Xiangqi Engine...")
+    print("[KHOI TAO] Dang khoi dong XiangMind Engine...")
     engine = EngineWrapper(ENGINE_PATH)
     print("[KHOI TAO] Engine da san sang!\n")
 
